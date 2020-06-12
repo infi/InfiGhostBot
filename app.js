@@ -17,22 +17,44 @@ const client = new tmi.Client({
 
 client.connect();
 
+let noDrops = !(process.argv.includes("--enable-drops") || process.argv.includes("-D"))
+
 let first = false
+
+const prefix = "i?"
 
 client.on('message', (channel, tags, message, self) => {
     if (self) return;
 
     if (!first) {
-        client.say(cfg.channel, "!drop me // initial InfiDropBot drop, triggered by the first message.")
+        if (!noDrops) {
+            client.say(cfg.channel, "!drop me // initial InfiGhostBot drop, triggered by the first message.")
+        } else {
+            console.log("[infighostbot] Drops are disabled, --enable-drops or -D to enable")
+        }
         first = true
     }
-    if (message.toLowerCase() === '!i?hello') {
-        client.say(channel, `@${tags.username}, hello!`);
+
+    if (!message.startsWith(prefix)) return
+
+    const command = message.split(" ")[0].substr(prefix.length)
+    const args = message.split(" ").slice(1)
+
+    if (command === 'raid') {
+        client.say(channel, `@${tags.username} => https://cdg.sh/raid`);
+    } else if (command === "quote") {
+        if (args.length < 3) return client.say(`!_ not enough arguments (${prefix}quote <who> <when> <what>)`)
+        let append = ""
+        if (tags.username !== cfg.owner) append += `(quoted by ${tags.username})`
+        const quotable = `<blockquote>"${args.slice(2).join(" ")}"</blockquote><i>-${args[0]} ${args[1]} ${append}`
+        client.say(channel, quotable)
     }
 });
 
 setInterval(() => {
-    client.say(cfg.channel, "!drop me").then(() => {
-        console.log("[infidropbot] Sent `!drop me`")
-    })
+    if (!noDrops) {
+        client.say(cfg.channel, "!drop me").then(() => {
+            console.log("[infighostbot] Sent `!drop me`")
+        })
+    }
 }, 91 * 1000)

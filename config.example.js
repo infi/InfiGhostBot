@@ -1,5 +1,6 @@
 module.exports = {
     username: "",
     password: "",
-    channel: ""
+    channel: "",
+    owner: "yourtwitchname"
 }
